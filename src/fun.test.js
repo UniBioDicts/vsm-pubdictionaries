@@ -131,25 +131,40 @@ describe('fun.js', () => {
 
   describe('removeDuplicateEntries', () => {
     it('returns proper results', cb => {
+      // neither match or entry VSM objects in the array
+      const arr = [{id: 1, stri: 'x1'}, {id: 1, stri: 'x1'}];
+      removeDuplicateEntries(arr).should.deep.equal(arr);
+
+      // VSM-match objects
       removeDuplicateEntries([]).should.deep.equal([]);
-      removeDuplicateEntries([{id: 1, dictID: 'x1'}])
-        .should.deep.equal([{id: 1, dictID: 'x1'}]);
-      removeDuplicateEntries([{id: 1, dictID: 'x1'}, {id: 2, dictID: 'x1'}])
-        .should.deep.equal([{id: 1, dictID: 'x1'}, {id: 2, dictID: 'x1'}]);
-      removeDuplicateEntries([{id: 1, dictID: 'x1', z: 'a'}, {id: 1, dictID: 'x2'}])
-        .should.deep.equal([{id: 1, dictID: 'x1', z: 'a'}, {id: 1, dictID: 'x2'}]);
+      removeDuplicateEntries([{id: 1, str: 'x1'}])
+        .should.deep.equal([{id: 1, str: 'x1'}]);
+      removeDuplicateEntries([{id: 1, str: 'x1'}, {id: 2, str: 'x1'}])
+        .should.deep.equal([{id: 1, str: 'x1'}, {id: 2, str: 'x1'}]);
+      removeDuplicateEntries([{id: 1, str: 'x1', z: 'a'}, {id: 1, str: 'x2'}])
+        .should.deep.equal([{id: 1, str: 'x1', z: 'a'}, {id: 1, str: 'x2'}]);
 
       // 1st and 3rd match, keep the first
-      removeDuplicateEntries([{id: 10, dictID: 'x2', z: 'axa'},
-        {id: 1, dictID: 'x1'}, {id: 10, dictID: 'x2'}])
-        .should.deep.equal([{id: 10, dictID: 'x2', z: 'axa'}, {id: 1, dictID: 'x1'}]);
+      removeDuplicateEntries([{id: 10, str: 'x2', z: 'axa'},
+        {id: 1, str: 'x1'}, {id: 10, str: 'x2'}])
+        .should.deep.equal([{id: 10, str: 'x2', z: 'axa'}, {id: 1, str: 'x1'}]);
 
       // multiple matches: keep only the first matches
-      removeDuplicateEntries([{id: 1, dictID: 'x1'}, {id: 2, dictID: 'x2'},
-        {id: 1, dictID: 'x1'}, {id: 1, dictID: 'x1'}, {id: 3, dictID: 'x3'},
-        {id: 2, dictID: 'x2'}])
+      removeDuplicateEntries([{id: 1, str: 'x1'}, {id: 2, str: 'x2'},
+        {id: 1, str: 'x1'}, {id: 1, str: 'x1'}, {id: 3, str: 'x3'},
+        {id: 2, str: 'x2'}])
         .should.deep.equal(
-          [{id: 1, dictID: 'x1'}, {id: 2, dictID: 'x2'}, {id: 3, dictID: 'x3'}]);
+          [{id: 1, str: 'x1'}, {id: 2, str: 'x2'}, {id: 3, str: 'x3'}]);
+
+      // VSM-entry objects
+      // multiple matches: keep only the first matches
+      removeDuplicateEntries([{id: 1, terms: [{str: 'x1'}]},
+        {id: 2, terms: [{str: 'x2'}]},
+        {id: 1, terms: [{str: 'x1'}]}, {id: 1, terms: [{str: 'x1'}]},
+        {id: 3, terms: [{str: 'x3'}]}, {id: 2, terms: [{str: 'x2'}]}])
+        .should.deep.equal(
+          [{id: 1, terms: [{str: 'x1'}]}, {id: 2, terms: [{str: 'x2'}]},
+            {id: 3, terms: [{str: 'x3'}]}]);
 
       cb();
     });

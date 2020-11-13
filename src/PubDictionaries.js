@@ -266,9 +266,15 @@ module.exports = class PubDictionaries extends Dictionary {
         if (callsRemaining <= 0) {
           let mergedMatchObjArrays = Array.from(urlToResultsMap.values());
 
-          // gather all results in one array, sort and z-prune them
-          // remove duplicates in each sub-array as there may be entries with
-          // the same (label+id) in a single pubDictionary!
+          /**
+           * Gather all results in one array
+           * 1) Remove duplicates in each sub-array as there may be entries with
+           * the same (label+id) in a single pubDictionary!
+           * 2) Trim match objects in case `mixed_completion` endpoint returns
+           * more than `per_page`
+           * 3) z-prune objects
+           * No sorting on client side at this point
+            */
           let arr = [];
           for (let matchObjArray of mergedMatchObjArrays) {
             arr = arr.concat(this.trimMatchObjArray(

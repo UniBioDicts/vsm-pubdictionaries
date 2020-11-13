@@ -99,17 +99,37 @@ function removeDuplicates(arr) {
 }
 
 /**
+ * Removes duplicate entries from VSM-match or VSM-entry objects.
+ * This function automatically detects which type (match or entry) this
+ * object is.
  *
- * @param arr Array of objects that have both `id` and `dictID` properties
+ * @param arr Array of objects that have both `id` and `str` properties
+ * for a VSM-match object or both `id` and `terms[0].str` properties
+ * for an VSM-entry object
  */
 function removeDuplicateEntries(arr) {
-  return arr.reduce((obj, currentEntry) => {
-    const x = obj.find(entry => entry.id === currentEntry.id
-      && entry.dictID === currentEntry.dictID);
-    if (!x) {
-      return obj.concat([currentEntry]);
-    } else {
-      return obj;
-    }
-  }, []);
+  // get type of object
+  let isMatchObj = arr.every(entry =>
+    (entry.hasOwnProperty('id') && entry.hasOwnProperty('str')));
+  let isEntryObj = arr.every(entry =>
+    (entry.hasOwnProperty('id') && entry.hasOwnProperty('terms')
+      && Array.isArray(entry.terms) && entry.terms.length > 0
+      && entry.terms[0].hasOwnProperty('str'))); // eh, that's enough!
+
+  let type = (isMatchObj) ? 'match' :
+    (isEntryObj) ? 'entry' : 'none';
+
+  if (type === 'none') return arr;
+  else
+    return arr.reduce((obj, currentEntry) => {
+      const x = obj.find(entry => entry.id === currentEntry.id
+      && ((type === 'entry') ?
+        entry.terms[0].str === currentEntry.terms[0].str : // entry
+        entry.str === currentEntry.str)); // match
+      if (!x) {
+        return obj.concat([currentEntry]);
+      } else {
+        return obj;
+      }
+    }, []);
 }
