@@ -4,5 +4,6 @@ A VSM-dictionary that communicates with the PubDictionaries REST API.
 
 PubDictionaries REST API Documentation: http://docs.pubdictionaries.org/
 
-First specification [draft](spec.md) (work for Elixir BioHackathon 2020, [project reference](https://github.com/elixir-europe/BioHackathon-projects-2020/tree/master/projects/4))
+Work was done in Elixir BioHackathon 2020, see [project reference](https://github.com/elixir-europe/BioHackathon-projects-2020/tree/master/projects/4)).
+
 
