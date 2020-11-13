@@ -1,0 +1,51 @@
+{
+  "name": "vsm-pubdictionaries",
+  "version": "1.0.0",
+  "description": "Implementation of a VSM-dictionary that interfaces with the PubDictionaries REST API",
+  "main": "src/PubDictionaries.js",
+  "scripts": {
+    "lint": "eslint src test",
+    "test": "nyc --reporter=lcov mocha \"src/**/*.test.js\" --check-leaks",
+    "coverage": "codecov",
+    "build": "webpack --config webpack.config.js"
+  },
+  "keywords": [
+    "biohackeu20",
+    "pubdictionaries",
+    "VSM",
+    "dictionary",
+    "ontology",
+    "identifier",
+    "term",
+    "interface"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UniBioDicts/vsm-pubdictionaries"
+  },
+  "author": "John Zobolas",
+  "license": "AGPL-3.0",
+  "devDependencies": {
+    "@babel/core": "^7.12.3",
+    "@babel/preset-env": "^7.12.1",
+    "babel-loader": "^8.1.0",
+    "chai": "^4.2.0",
+    "clean-webpack-plugin": "^1.0.1",
+    "codecov": "^3.8.1",
+    "copy-webpack-plugin": "^5.1.2",
+    "eslint": "^5.16.0",
+    "html-webpack-plugin": "^3.2.0",
+    "mocha": "^7.2.0",
+    "nock": "^9.6.1",
+    "nyc": "^15.1.0",
+    "terser-webpack-plugin": "^2.3.8",
+    "text-transform-loader": "^2.0.0",
+    "webpack": "^4.44.2",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
+  },
+  "dependencies": {
+    "vsm-dictionary": "^2.6.6",
+    "xmlhttprequest": "^1.8.0"
+  }
+}
