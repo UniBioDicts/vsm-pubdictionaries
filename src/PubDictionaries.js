@@ -11,7 +11,7 @@ module.exports = class PubDictionaries extends Dictionary {
     const opt = options || {};
     super(opt);
 
-    const baseURL = opt.baseURL || 'http://pubdictionaries.org';
+    const baseURL = opt.baseURL || 'https://pubdictionaries.org';
 
     // enable the console.log() usage
     this.enableLog = opt.log || false;
@@ -25,9 +25,9 @@ module.exports = class PubDictionaries extends Dictionary {
 
     // 2 types of type-ahead suggestions supported: 'prefix' and 'substring'
     this.suggest = (typeof opt.suggest === 'string'
-      && (opt.suggest === 'prefix') || opt.suggest === 'substring')
+      && (opt.suggest === 'prefix') || opt.suggest === 'substring' || opt.suggest === 'mixed')
       ? opt.suggest
-      : 'prefix'; // by default, use the `prefix_completion`
+      : 'mixed'; // by default, use the `mixed_completion` endpoint
 
     // getDictInfo URL pattern
     this.urlGetDictInfos = opt.urlGetDictInfos || baseURL + '/dictionaries/$filterDictID.json';
@@ -43,9 +43,12 @@ module.exports = class PubDictionaries extends Dictionary {
     // getEntryMatchesForString
     this.urlGetMatches = opt.urlGetMatches
       || baseURL + '/dictionaries/$filterDictID/';
-    this.suggest === 'prefix'
-      ? this.urlGetMatches = this.urlGetMatches + 'prefix_completion?term=$queryString'
-      : this.urlGetMatches = this.urlGetMatches + 'substring_completion?term=$queryString';
+    if (this.suggest === 'prefix')
+      this.urlGetMatches = this.urlGetMatches + 'prefix_completion?term=$queryString';
+    else if (this.suggest === 'substring')
+      this.urlGetMatches = this.urlGetMatches + 'substring_completion?term=$queryString';
+    else
+      this.urlGetMatches = this.urlGetMatches + 'mixed_completion?term=$queryString';
   }
 
   getDictInfos(options, cb) {
@@ -223,6 +226,9 @@ module.exports = class PubDictionaries extends Dictionary {
     }
 
     const urlArray = this.buildMatchURLs(str, optionsCloned);
+    // If no URLs, return
+
+
     let callsRemaining = urlArray.length;
     let urlToResultsMap = new Map();
     let answered = false;
@@ -321,30 +327,33 @@ module.exports = class PubDictionaries extends Dictionary {
 
   buildMatchURLs(str, options) {
     const obj = this.splitDicts(options);
+    // coming (mostly) out of `options.sort`
     const pref = this.getDictNamesFromArray(obj.pref);
+    // coming (mostly) out of `options.filter`
     const rest = this.getDictNamesFromArray(obj.rest);
 
+    // not supported by pubDictionaries
     if (pref.length === 0 && rest.length === 0)
       return this.prepareMatchStringSearchURLs(str, options, []);
+    // filter on specific pubDictionaries (`rest`)
     else if (pref.length === 0 && rest.length !== 0)
       return this.prepareMatchStringSearchURLs(str, options, rest);
+    // filter on specific pubDictionaries (`pref`) only if `page=1`
     else if (pref.length !== 0 && rest.length === 0) {
-      // case of no `page` or `page == 1`
       if (!options.hasOwnProperty('page') || hasPagePropertyEqualToOne(options))
-        return this.prepareMatchStringSearchURLs(str, options, pref)
-          .concat(this.prepareMatchStringSearchURLs(str, options, []));
-      else // `sort.dictID`/`pref` is followed only with `page == 1`
+        return this.prepareMatchStringSearchURLs(str, options, pref);
+      else
         return this.prepareMatchStringSearchURLs(str, options, []);
     } else if (pref.length !== 0 && rest.length !== 0) {
-      // case of no `page` or `page == 1`
-    // if (!options.hasOwnProperty('page') || hasPagePropertyEqualToOne(options))
-      //  return this.prepareMatchStringSearchURLs(str, options, pref)
-      //    .concat(this.prepareMatchStringSearchURLs(str, options, rest));
-      //else
+      // filter on specific pubDictionaries (first `pref`, then the `rest`)
       return this.prepareMatchStringSearchURLs(str, options, pref.concat(rest));
     }
   }
 
+  /**
+   * Splits requested sub-dictionaries based on the `options.filter` and
+   * `options.sort`
+   */
   splitDicts(options) {
     if (!hasProperSortDictIDProperty(options))
       return ({
@@ -404,7 +413,7 @@ module.exports = class PubDictionaries extends Dictionary {
         if (this.enableLog) console.log('No dictionary name?');
       }
 
-      let dictURL = 'http://' + this.pubDictIdURI + '/' + dictName;
+      let dictURL = 'https://' + this.pubDictIdURI + '/' + dictName;
       return res.map(entry => ({
         id: entry.id,
         dictID: dictURL,
@@ -423,7 +432,7 @@ module.exports = class PubDictionaries extends Dictionary {
         uniqueDicts.forEach(dictName => {
           resObj.push({
             id: id,
-            dictID: 'http://' + this.pubDictIdURI + '/' + dictName,
+            dictID: 'https://' + this.pubDictIdURI + '/' + dictName,
             descr: this.refineID(id),
             terms: arr.reduce((newArray, tuple) => {
               if (tuple.dictionary === dictName) {
@@ -457,7 +466,7 @@ module.exports = class PubDictionaries extends Dictionary {
       if (this.enableLog) console.log('No dictionary name?');
     }
 
-    let dictURL = 'http://' + this.pubDictIdURI + '/' + dictName;
+    let dictURL = 'https://' + this.pubDictIdURI + '/' + dictName;
 
     return res.map(entry => ({
       id: entry.id,
@@ -500,6 +509,7 @@ module.exports = class PubDictionaries extends Dictionary {
     }
 
     // all entries from specific pubDictionaries
+    // default sorting is by dictID
     if (dictNameArray.length > 0 && searchIDs.length === 0) {
       let searchURL = this.urlGetEntriesForSpecificDict;
       urlArray = dictNameArray.sort().map(dictName =>
@@ -533,22 +543,17 @@ module.exports = class PubDictionaries extends Dictionary {
     let searchURL = this.urlGetMatches
       .replace('$queryString', fixedEncodeURIComponent(str));
 
-    let searchURLArray = dictNameArray.map(
+    let urlArray = dictNameArray.map(
       dictName => searchURL.replace('$filterDictID', dictName));
 
-    // TODO
-    if (hasProperPageProperty(options)) {
-      let pageNumber = options.page;
-      searchURL += '&page=' + pageNumber;
-    }
+    // add paging
+    const page = this.getPage(options);
+    const pageSize = this.getPageSize(options);
 
-    // TODO
-    if (hasProperPerPageProperty(options)) {
-      let NumOfResultsPerPage = options.perPage;
-      searchURL += '&per_page=' + NumOfResultsPerPage;
-    }
+    urlArray = urlArray.map(url => url.concat('&page=' + page +
+      '&per_page=' + pageSize));
 
-    return searchURLArray;
+    return urlArray;
   }
 
   request(url, cb) {
