@@ -316,6 +316,44 @@ describe('PubDictionaries.js', () => {
   });
 
   describe('getEntryMatchesForString', () => {
+    it('returns proper formatted error for non-valid when no dictionaries ' +
+      'are queries based on the `options.sort`, `options.filter` and `page` ' +
+      'options', cb => {
+      // no dictIDs whatsoever
+      dict.getEntryMatchesForString(melanomaStr, {}, (err, res) => {
+        err.should.have.property('error');
+        err.should.have.property('status');
+        err.error.includes('Not supported').should.be.true;
+        err.status.should.equal(404);
+        assert.typeOf(res, 'undefined');
+      });
+
+      dict.getEntryMatchesForString(melanomaStr, { filter: { dictID : [] },
+        sort: { dictID : [] }}, (err, res) => {
+        err.should.have.property('error');
+        err.should.have.property('status');
+        err.error.includes('Not supported').should.be.true;
+        err.status.should.equal(404);
+        assert.typeOf(res, 'undefined');
+      });
+
+      // only sort dictIDs and page > 1
+      dict.getEntryMatchesForString(melanomaStr, { sort: {
+        dictID : [
+          'http://test/dictionaries/A',
+          'http://test/dictionaries/B',
+          'http://test/dictionaries/C'
+        ]}, page: 2 }, (err, res) => {
+        err.should.have.property('error');
+        err.should.have.property('status');
+        err.error.includes('Not supported').should.be.true;
+        err.status.should.equal(404);
+        assert.typeOf(res, 'undefined');
+      });
+
+      cb();
+    });
+
     it('returns proper formatted error for non-valid dictionary name in search' +
       'query', cb => {
       let queryStr = errorNonValidDictionaryNameURL.replace('.json','') +

@@ -226,8 +226,12 @@ module.exports = class PubDictionaries extends Dictionary {
     }
 
     const urlArray = this.buildMatchURLs(str, optionsCloned);
-    // If no URLs, return
-
+    // If no URLs, return error with appropriate message
+    if (urlArray.length === 0) {
+      let err = { status: 404, error: 'Not supported: either only sort.dictID' +
+          '\'s present and page > 1 or no dictIDs to filter at all' };
+      return cb(err);
+    }
 
     let callsRemaining = urlArray.length;
     let urlToResultsMap = new Map();
@@ -267,8 +271,10 @@ module.exports = class PubDictionaries extends Dictionary {
           // the same (label+id) in a single pubDictionary!
           let arr = [];
           for (let matchObjArray of mergedMatchObjArrays) {
-            arr = arr.concat(this.sortMatches(Dictionary.zPropPrune(
-              removeDuplicateEntries(matchObjArray), optionsCloned.z)));
+            arr = arr.concat(this.trimMatchObjArray(
+              Dictionary.zPropPrune(
+                removeDuplicateEntries(matchObjArray), optionsCloned.z),
+              optionsCloned));
           }
 
           arr = this.trimMatchObjArray(arr, optionsCloned);
@@ -342,7 +348,7 @@ module.exports = class PubDictionaries extends Dictionary {
     else if (pref.length !== 0 && rest.length === 0) {
       if (!options.hasOwnProperty('page') || hasPagePropertyEqualToOne(options))
         return this.prepareMatchStringSearchURLs(str, options, pref);
-      else
+      else // not supported
         return this.prepareMatchStringSearchURLs(str, options, []);
     } else if (pref.length !== 0 && rest.length !== 0) {
       // filter on specific pubDictionaries (first `pref`, then the `rest`)
