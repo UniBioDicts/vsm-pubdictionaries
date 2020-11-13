@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="English">
+<head>
+    <title>vsm-box + PubDictionaries example</title>
+    <script src="/home/john/repos/uniBioDicts/vsm-pubdictionaries/dist/vsm-pubdictionaries.min.js"></script>
+    <script src="https://unpkg.com/vsm-dictionary-rnacentral@^1.0.1/dist/vsm-dictionary-rnacentral.min.js"></script>
+    <script src="https://unpkg.com/vsm-dictionary-cacher@^1.2.0/dist/vsm-dictionary-cacher.min.js"></script>
+    <script src="https://unpkg.com/vsm-dictionary-combiner@^1.0.1/dist/vsm-dictionary-combiner.min.js"></script>
+    <script src="https://unpkg.com/vsm-box@^1.0.0/dist/vsm-box.standalone.min.js"></script>
+</head>
+
+<body>
+<vsm-box autofocus=true></vsm-box>
+</body>
+
+<script>
+  // initialize vsm-pubdictionaries
+  let VsmPubDict  = new VsmPubDictionaries({log: true});
+  let VsmDictRNAcentral  	= new VsmDictionaryRNAcentral({log: true});
+
+  // initialize a cached version of the combiner
+  let VsmDictionaryCombinerCached = VsmDictionaryCacher(VsmDictionaryCombiner, { predictEmpties: false });
+  let dictionary = new VsmDictionaryCombinerCached({
+    // Give all required dictionaries as initialized Objects in this array
+    dictionaries: [
+      VsmPubDict, VsmDictRNAcentral
+    ],
+    errorIfAllErrors: true
+  });
+
+  let vsmbox = document.getElementsByTagName('vsm-box')[0];
+  let queryOptions = { perPage: 5 };
+  let initialValue = {
+    terms: [
+      { // query all dictionaries (and sub-dictionaries)
+        placeholder: 'all dictionaries'
+      },
+      { // query only the `human-UniProt` pubDictionary
+        queryOptions: {
+          filter: { dictID: [ 'http://pubdictionaries.org/dictionaries/human-UniProt' ] }
+        },
+        placeholder: 'human-UniProt'
+      },
+      { // query only the `MONDO` pubDictionary
+        queryOptions: {
+          filter: { dictID: [ 'http://pubdictionaries.org/dictionaries/MONDO' ] }
+        },
+        placeholder: 'MONDO'
+      },
+      { // query only RNAcentral and the `human-UniProt` pubdictionary
+        queryOptions: {
+          filter: { dictID: [
+            'https://www.rnacentral.org',
+            'http://pubdictionaries.org/dictionaries/human-UniProt'
+          ]}
+        },
+        placeholder: 'RNA + UniProt'
+      }
+    ],
+    conns: [
+      { type: 'T', pos: [ 0, 1, 2 ] },
+      { type: 'T', pos: [ 2, -1, 3 ] },
+    ]
+  };
+
+  vsmbox.vsmDictionary = dictionary;
+  vsmbox.initialValue = initialValue;
+  vsmbox.queryOptions = queryOptions;
+  vsmbox.sizes = { minWidth: 400 };
+</script>
+</html>
