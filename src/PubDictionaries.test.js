@@ -1610,4 +1610,120 @@ describe('PubDictionaries.js', () => {
       cb();
     });
   });
+
+  describe('reArrangeEntries', () => {
+    it('returns an empty array when input is an empty array', cb => {
+      const res = dict.reArrangeEntries([], { filter: { id: ['id1'] }});
+      expect(res).to.be.empty;
+      cb();
+    });
+
+    it('returns the same array when `filter.id` is not properly defined', cb => {
+      const arr = [ { id: 'id1', z: { dictAbbrev: 'LNC' }},
+        { id: 'id2', z: { dictAbbrev: 'CLO' }},
+        { id: 'id3', z: { dictAbbrev: 'MO' }},
+        { id: 'id4', z: { dictAbbrev: 'RADLEX' }}];
+
+      const arrCloned = deepClone(arr);
+
+      dict.reArrangeEntries(arr, {}).should.deep.equal(arrCloned);
+      cb();
+    });
+
+    it('returns the same array when no re-arrangement was done', cb => {
+      const arr = [ { id: 'id1', z: { dictAbbrev: 'LNC' }},
+        { id: 'id2', z: { dictAbbrev: 'CLO' }},
+        { id: 'id3', z: { dictAbbrev: 'MO' }},
+        { id: 'id4', z: { dictAbbrev: 'RADLEX' }}];
+
+      const arrCloned = deepClone(arr);
+
+      dict.reArrangeEntries(arr,{ filter: { id: ['id1', 'id2', 'id3', 'id4'] }})
+        .should.deep.equal(arrCloned);
+      cb();
+    });
+
+    it('returns a properly re-arranged array when there are objects with the ' +
+      'same `id` properties in the given array', cb => {
+      const arr1 = [{ id: 'id1', m: 1 }, { id: 'id2', m: 2 }, { id: 'id2', m: 3 },
+        { id: 'id1', m: 4 }];
+      const expectedResult1 = [{ id: 'id1', m: 1 }, { id: 'id2', m: 2 },
+        { id: 'id2', m: 3 }, { id: 'id1', m: 4 }];
+
+      const arr2 = [{ id: 'id1', m: 1 }, { id: 'id1', m: 2 }, { id: 'id2', m: 3 },
+        { id: 'id2', m: 4 }];
+      const expectedResult2 = [{ id: 'id1', m: 1 }, { id: 'id2', m: 3 },
+        { id: 'id1', m: 2 }, { id: 'id2', m: 4 }];
+
+      const arr3 = [{ id: 'id1', m: 1 }, { id: 'id3', m: 2 }, { id: 'id1', m: 3 },
+        { id: 'id2', m: 4 }, { id: 'id2', m: 5 }, { id: 'id3', m: 6 },
+        { id: 'id1', m: 7 }, { id: 'id4', m: 8 }, { id: 'id4', m: 9 }];
+      const expectedResult3 = [{ id: 'id1', m: 1 }, { id: 'id3', m: 2 },
+        { id: 'id2', m: 4 }, { id: 'id4', m: 8 }, { id: 'id1', m: 3 },
+        { id: 'id2', m: 5 }, { id: 'id3', m: 6 }, { id: 'id1', m: 7 },
+        { id: 'id4', m: 9 }];
+
+      // just making sure that the filter id is proper and not putting all
+      // the corresponding ids in the `options.filter.id`
+      const res1 = dict.reArrangeEntries(arr1, { filter: { id: ['id1'] }});
+      const res2 = dict.reArrangeEntries(arr2, { filter: { id: ['id1'] }});
+      const res3 = dict.reArrangeEntries(arr3, { filter: { id: ['id1'] }});
+
+      res1.should.deep.equal(expectedResult1);
+      res2.should.deep.equal(expectedResult2);
+      res3.should.deep.equal(expectedResult3);
+
+      cb();
+    });
+  });
+
+  describe('getUniqueIDsFromObjArray', () => {
+    it('returns all the unique ids from an array of vsm-match objects', cb => {
+      let arr = [{ id: 'id1', str: 'str1' },
+        { id: 'id2', str: 'str2' },
+        { id: 'id3', str: 'str3' }];
+
+      const res1 = dict.getUniqueIDsFromObjArray(arr);
+
+      arr.push({id: 'id1', str: 'str1'});
+      arr.push({id: 'id3', str: 'str3'});
+      arr.push({id: 'id4', str: 'str4'});
+
+      const res2 = dict.getUniqueIDsFromObjArray(arr);
+
+      const expectedResult1 = ['id1','id2','id3'];
+      // keeps only the unique ids
+      const expectedResult2 = ['id1','id2','id3','id4'];
+
+      res1.should.deep.equal(expectedResult1);
+      res2.should.deep.equal(expectedResult2);
+
+      cb();
+    });
+
+    it('returns an empty array when input is either an empty array ' +
+      'or an array whose elements don\'t have the `id` property', cb => {
+      const arr1 = [];
+      const arr2 = [{ dictID: 'id1', str: 'str1' }, { dictID: 'id2', str: 'str2'}];
+
+      const res1 = dict.getUniqueIDsFromObjArray(arr1);
+      const res2 = dict.getUniqueIDsFromObjArray(arr2);
+
+      res1.should.deep.equal([]);
+      res2.should.deep.equal([]);
+      cb();
+    });
+
+    it('returns proper result when the input array has \'mixed\' elements ' +
+      '- some that have the `id` property and some that don\'t', cb => {
+      const arr = [{ id: 'id1', str: 'str1' }, { dictID: 'id2', str: 'str2' },
+        { id: 'id3', str: 'str3' }];
+
+      const res = dict.getUniqueIDsFromObjArray(arr);
+      const expectedResult = ['id1', 'id3'];
+
+      res.should.deep.equal(expectedResult);
+      cb();
+    });
+  });
 });

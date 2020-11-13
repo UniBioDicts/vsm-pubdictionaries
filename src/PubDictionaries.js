@@ -151,14 +151,11 @@ module.exports = class PubDictionaries extends Dictionary {
       optionsCloned.filter.dictID = idList;
     }
 
-    // Hack option for getting proper sorted results from PubDictionaries
+    // Hack option for getting all results from PubDictionaries
     // when requesting for an entry by id (with or without dictID)
-    optionsCloned.getAllResults = optionsCloned.getAllResults || false;
-
-    if ((optionsCloned.getAllResults)
-      && hasProperFilterIDProperty(optionsCloned)) {
-      //  ignore perPage and page, return all, sort unique asked IDs first TODO
-    }
+    optionsCloned.getAllResults =
+      (optionsCloned.getAllResults && hasProperFilterIDProperty(optionsCloned))
+      || false;
 
     const urlArray = this.buildEntryURLs(optionsCloned);
     let callsRemaining = urlArray.length;
@@ -192,14 +189,28 @@ module.exports = class PubDictionaries extends Dictionary {
         --callsRemaining;
         // all calls have returned, so sort and trim results
         if (callsRemaining <= 0) {
+          /**
+           * Gather all results in one array
+           * 1) Trim entry objects in case `filter.id` was properly defined
+           * and `getAllResults == true` (hack is enabled when requesting
+           * specific ids)
+           * 2) re-arrange entries when requesting specific ids (in case
+           * of duplicate entries with the same id, but different dictID)
+           * 3) z-prune objects
+           * 4) trim entry objects based on the `getAllResults` and
+           * `options.filter.id` options
+           *
+           */
           let arr = [];
           for (let entryObjArray of urlToResultsMap.values())
             arr = arr.concat(entryObjArray);
 
+          // rearrange entries
+          arr = this.reArrangeEntries(arr, optionsCloned);
+
           // z-prune and trim results
           arr = this.trimEntryObjArray(
-            Dictionary.zPropPrune(arr, optionsCloned.z), optionsCloned
-          );
+            Dictionary.zPropPrune(arr, optionsCloned.z), optionsCloned);
 
           if (!answered) cb(err, {items: arr});
         }
@@ -264,8 +275,6 @@ module.exports = class PubDictionaries extends Dictionary {
         --callsRemaining;
         // all calls have returned, so merge, z-prune, sort and trim results
         if (callsRemaining <= 0) {
-          let mergedMatchObjArrays = Array.from(urlToResultsMap.values());
-
           /**
            * Gather all results in one array
            * 1) Remove duplicates in each sub-array as there may be entries with
@@ -276,7 +285,7 @@ module.exports = class PubDictionaries extends Dictionary {
            * No sorting on client side at this point
             */
           let arr = [];
-          for (let matchObjArray of mergedMatchObjArrays) {
+          for (let matchObjArray of urlToResultsMap.values()) {
             arr = arr.concat(this.trimMatchObjArray(
               Dictionary.zPropPrune(
                 removeDuplicateEntries(matchObjArray), optionsCloned.z),
@@ -650,14 +659,61 @@ module.exports = class PubDictionaries extends Dictionary {
     // do not trim when getAllResults hack is enabled
     return (options.getAllResults)
       ? arr
-      : this.trimMatchObjArray(arr, options);
+      // getAllResults == false
+      : (hasProperFilterIDProperty(options))
+        // asking for specific ids, prune with both `page` and `perPage` options
+        ? this.trimDictInfoArray(arr, this.getPage(options),
+          this.getPageSize(options))
+        // else prune only with the `perPage` option
+        : this.trimMatchObjArray(arr, options);
   }
 
   trimMatchObjArray(arr, options) {
-    if (hasProperPerPageProperty(options)) {
-      return arr.slice(0, options.perPage);
-    } else {
-      return arr.slice(0, this.pubDictionariesDefaultPageSize);
+    let pageSize = this.getPageSize(options);
+    return arr.slice(0, pageSize);
+  }
+
+  /**
+   * If `options.filter.id` is not properly defined no rearrangement is done
+   *
+   * @param arr An array of VSM-entry objects, or at least ones that have
+   * elements with an `id` property
+   * @param options
+   */
+  reArrangeEntries(arr, options) {
+    if (!hasProperFilterIDProperty(options)) return arr;
+    else {
+      const uniqueIDs = this.getUniqueIDsFromObjArray(arr);
+
+      let position = 0;
+      for (let id of uniqueIDs) {
+        // return the index of the first entry that matches the id
+        let index = arr.findIndex(entry => entry.id === id);
+        let entry = arr[index];
+
+        if (index !== position) {
+          // remove entry from array
+          arr.splice(index, 1);
+
+          // insert it at next position (keeping the initial order)
+          arr.splice(position, 0, entry);
+        }
+
+        position++;
+      }
+
+      return arr;
     }
+  }
+
+  /**
+   * @param arr Array of objects with an `id` property
+   */
+  getUniqueIDsFromObjArray(arr) {
+    return arr.reduce((res, obj) => {
+      if (obj.id && !res.includes(obj.id))
+        res.push(obj.id);
+      return res;
+    }, []);
   }
 };
