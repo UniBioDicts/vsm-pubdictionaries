@@ -5,7 +5,7 @@
 
 const PubDictionaries = require('../src/PubDictionaries');
 
-const dict = new PubDictionaries({log: true});
+const dict = new PubDictionaries({log: true, suggest: 'mixed'});
 
 dict.getEntryMatchesForString('dog',
   { filter: { dictID : [
@@ -13,9 +13,9 @@ dict.getEntryMatchesForString('dog',
     'http://pubdictionaries.org/dictionaries/MONDO',
     'http://pubdictionaries.org/dictionaries/human-UniProt'
   ]},
-  sort: { dictID : ['http://pubdictionaries.org/dictionaries/human-UniProt'] },
+  sort: { dictID : ['http://pubdictionaries.org/dictionaries/PTO-all'] },
   page: 1,
-  perPage: 20
+  perPage: 7
   }, (err, res) => {
     if (err) console.log(JSON.stringify(err, null, 4));
     else {

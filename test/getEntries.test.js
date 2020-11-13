@@ -13,7 +13,7 @@ dict.getEntries(
       'http://purl.obolibrary.org/obo/MONDO_0024919',
       'http://purl.obolibrary.org/obo/MONDO_0006872',
       '2',
-      'http://semantic-dicom.org/dcm#ATT2010015E'
+      '5'
     ],
     dictID : [
       'http://pubdictionaries.org/dictionaries/MONDO',
@@ -22,7 +22,7 @@ dict.getEntries(
     ]
   },
   page: 1,
-  perPage: 14,
+  perPage: 5,
   getAllResults: false
   }, (err, res) => {
     if (err) console.log(JSON.stringify(err, null, 4));
