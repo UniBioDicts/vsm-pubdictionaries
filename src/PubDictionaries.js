@@ -236,7 +236,11 @@ module.exports = class PubDictionaries extends Dictionary {
       optionsCloned.filter.dictID = idList;
     }
 
-    const urlArray = this.buildMatchURLs(str, optionsCloned);
+    const matchURLs = this.buildMatchURLs(str, optionsCloned);
+    const urlArray = matchURLs[0];
+    const prefDictNum = matchURLs[1]; // how many "preferred" dictionaries
+    //const restDictNum = matchURLs[2]; // how many "rest/filtered" dictionaries
+
     // If no URLs, return error with appropriate message
     if (urlArray.length === 0) {
       let err = { status: 404, error: 'Not supported: either only sort.dictID' +
@@ -267,29 +271,42 @@ module.exports = class PubDictionaries extends Dictionary {
             return cb(err);
           }
         } else {
-          urlToResultsMap.set(
-            url, this.mapPubDictSearchResToMatchObj(res, url, str)
-          );
+          /**
+           * 1) Remove duplicate entries, i.e. with the same (label+id) in a
+           * single pubDictionary! (shouldn't happen usually)
+           * 2) Trim match objects in case `mixed_completion` endpoint returns
+           * more than `per_page` (shouldn't be needed if it worked as it should)
+           */
+          urlToResultsMap.set(url, this.trimMatchObjArray(
+            removeDuplicateEntries(
+              this.mapPubDictSearchResToMatchObj(res, url, str)), optionsCloned));
         }
 
         --callsRemaining;
         // all calls have returned, so merge, z-prune, sort and trim results
         if (callsRemaining <= 0) {
           /**
-           * Gather all results in one array
-           * 1) Remove duplicates in each sub-array as there may be entries with
-           * the same (label+id) in a single pubDictionary!
-           * 2) Trim match objects in case `mixed_completion` endpoint returns
-           * more than `per_page`
-           * 3) z-prune objects
-           * No sorting on client side at this point
+           * Merge results into two arrays: `preferred` vs `rest`
+           * dictionaries. Then, gather all results in one array and:
+           *
+           * 1) z-prune objects
+           * 2) Sort matches in each respective dictionary result group
+           * (`preferred` or `rest`) according to spec
+           *
             */
+          let mergedMatchObjArrays = Array.from(urlToResultsMap.values());
+          let preferredDictRes = mergedMatchObjArrays
+            .slice(0, prefDictNum).flat(1);
+          let restDictRes = mergedMatchObjArrays
+            .slice(prefDictNum).flat(1);
+
+          mergedMatchObjArrays = [preferredDictRes, restDictRes];
+
           let arr = [];
-          for (let matchObjArray of urlToResultsMap.values()) {
-            arr = arr.concat(this.trimMatchObjArray(
-              Dictionary.zPropPrune(
-                removeDuplicateEntries(matchObjArray), optionsCloned.z),
-              optionsCloned));
+          for (let matchObjArray of mergedMatchObjArrays) {
+            arr = arr.concat(this.sortMatches(
+              Dictionary.zPropPrune(matchObjArray, optionsCloned.z))
+            );
           }
 
           arr = this.trimMatchObjArray(arr, optionsCloned);
@@ -346,6 +363,13 @@ module.exports = class PubDictionaries extends Dictionary {
     }
   }
 
+  /**
+   * This function returns an array whose first element is the array of match
+   * URLs to be send to pubDictionaries, and the second and third element are
+   * respectively the number of URLs that correspond to the preferred
+   * dictionaries (`sort.dictID`) and the rest/filtered dictionaries
+   * (`filter.dictID`).
+   */
   buildMatchURLs(str, options) {
     const obj = this.splitDicts(options);
     // coming (mostly) out of `options.sort`
@@ -353,27 +377,30 @@ module.exports = class PubDictionaries extends Dictionary {
     // coming (mostly) out of `options.filter`
     const rest = this.getDictNamesFromArray(obj.rest);
 
+    let urls = [];
     // not supported by pubDictionaries
     if (pref.length === 0 && rest.length === 0)
-      return this.prepareMatchStringSearchURLs(str, options, []);
+      urls = this.prepareMatchStringSearchURLs(str, options, []);
     // filter on specific pubDictionaries (`rest`)
     else if (pref.length === 0 && rest.length !== 0)
-      return this.prepareMatchStringSearchURLs(str, options, rest);
+      urls = this.prepareMatchStringSearchURLs(str, options, rest);
     // filter on specific pubDictionaries (`pref`) only if `page=1`
     else if (pref.length !== 0 && rest.length === 0) {
       if (!options.hasOwnProperty('page') || hasPagePropertyEqualToOne(options))
-        return this.prepareMatchStringSearchURLs(str, options, pref);
+        urls = this.prepareMatchStringSearchURLs(str, options, pref);
       else // not supported
-        return this.prepareMatchStringSearchURLs(str, options, []);
+        urls = this.prepareMatchStringSearchURLs(str, options, []);
     } else if (pref.length !== 0 && rest.length !== 0) {
       // filter on specific pubDictionaries (first `pref`, then the `rest`)
-      return this.prepareMatchStringSearchURLs(str, options, pref.concat(rest));
+      urls = this.prepareMatchStringSearchURLs(str, options, pref.concat(rest));
     }
+
+    return [urls, pref.length, rest.length];
   }
 
   /**
-   * Splits requested sub-dictionaries based on the `options.filter` and
-   * `options.sort`
+   * Splits sub-dictionaries based on the `options.filter.dictID` and
+   * `options.sort.dictID` options
    */
   splitDicts(options) {
     if (!hasProperSortDictIDProperty(options))

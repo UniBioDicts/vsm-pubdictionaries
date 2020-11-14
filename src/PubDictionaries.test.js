@@ -732,6 +732,7 @@ describe('PubDictionaries.js', () => {
   describe('buildMatchURLs', () => {
     it('returns no URLs when there is neither `options.filter` and ' +
       '`options.sort` given, no matter the page asked', cb => {
+      let pref = 0, rest = 0;
       const options = {
         filter: { dictID : [] },
         sort: { dictID : [] },
@@ -741,14 +742,14 @@ describe('PubDictionaries.js', () => {
       };
 
       const res1 = dict.buildMatchURLs(melanomaStr, options);
-      const expectedResult1 = [];
+      const expectedResult1 = [[],pref,rest];
 
       options.page = 20;
       const res2 = dict.buildMatchURLs(melanomaStr, options);
-      const expectedResult2 = [];
+      const expectedResult2 = expectedResult1;
 
       const res3 = dict2.buildMatchURLs(melanomaStr, options);
-      const expectedResult3 = [];
+      const expectedResult3 = expectedResult1;
 
       res1.should.deep.equal(expectedResult1);
       res2.should.deep.equal(expectedResult2);
@@ -758,6 +759,7 @@ describe('PubDictionaries.js', () => {
 
     it('returns two URLs when `options.filter` is given but no ' +
       '`options.sort`', cb => {
+      let pref = 0, rest = 3;
       const options = {
         filter: { dictID : [
           'http://test/dictionaries/A',
@@ -772,19 +774,28 @@ describe('PubDictionaries.js', () => {
 
       const res1 = dict.buildMatchURLs(melanomaStr, options);
       const expectedResult1 = [
-        testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=1&per_page=20',
-        testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=1&per_page=20',
-        testURLBase + '/dictionaries/C/mixed_completion?term=melanoma&page=1&per_page=20'
-      ];
+        [
+          testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=1&per_page=20',
+          testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=1&per_page=20',
+          testURLBase + '/dictionaries/C/mixed_completion?term=melanoma&page=1&per_page=20'
+        ], pref, rest];
 
       options.page = 20;
       const res2 = dict.buildMatchURLs(melanomaStr, options);
-      const expectedResult2 = expectedResult1.map(url =>
-        url.replace('page=1', 'page=20'));
+      const expectedResult2 = [
+        [
+          testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=20&per_page=20',
+          testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=20&per_page=20',
+          testURLBase + '/dictionaries/C/mixed_completion?term=melanoma&page=20&per_page=20'
+        ], pref, rest];
 
       const res3 = dict2.buildMatchURLs(melanomaStr, options);
-      const expectedResult3 = expectedResult1.map(url =>
-        url.replace('page=1', 'page=20').replace('mixed', 'substring'));
+      const expectedResult3 = [
+        [
+          testURLBase + '/dictionaries/A/substring_completion?term=melanoma&page=20&per_page=20',
+          testURLBase + '/dictionaries/B/substring_completion?term=melanoma&page=20&per_page=20',
+          testURLBase + '/dictionaries/C/substring_completion?term=melanoma&page=20&per_page=20'
+        ], pref, rest];
 
       res1.should.deep.equal(expectedResult1);
       res2.should.deep.equal(expectedResult2);
@@ -794,6 +805,7 @@ describe('PubDictionaries.js', () => {
 
     it('returns proper URLs when `options.sort` is given but no ' +
       '`options.filter`, based on the `options.page` value', cb => {
+      let pref = 3, rest = 0;
       const options = {
         filter: { dictID : [] },
         sort: { dictID : [
@@ -807,15 +819,16 @@ describe('PubDictionaries.js', () => {
 
       const res1 = dict.buildMatchURLs(melanomaStr, options);
       const expectedResult1 = [
-        testURLBase + '/dictionaries/A/mixed_completion?term=melanoma' + pubDictPagingOpt,
-        testURLBase + '/dictionaries/B/mixed_completion?term=melanoma' + pubDictPagingOpt,
-        testURLBase + '/dictionaries/C/mixed_completion?term=melanoma' + pubDictPagingOpt
-      ];
+        [
+          testURLBase + '/dictionaries/A/mixed_completion?term=melanoma' + pubDictPagingOpt,
+          testURLBase + '/dictionaries/B/mixed_completion?term=melanoma' + pubDictPagingOpt,
+          testURLBase + '/dictionaries/C/mixed_completion?term=melanoma' + pubDictPagingOpt
+        ], pref, rest];
 
       options.page = 2;
       const res2 = dict.buildMatchURLs(melanomaStr, options);
       // page > 1 and sort.dictID are not compatible according to spec
-      const expectedResult2 = [];
+      const expectedResult2 = [[], pref, rest];
 
       // no `page` option is like `page == 1`
       delete options.page;
@@ -824,10 +837,11 @@ describe('PubDictionaries.js', () => {
 
       const res4 = dict2.buildMatchURLs(melanomaStr, options);
       const expectedResult4 = [
-        testURLBase + '/dictionaries/A/substring_completion?term=melanoma' + pubDictPagingOpt,
-        testURLBase + '/dictionaries/B/substring_completion?term=melanoma' + pubDictPagingOpt,
-        testURLBase + '/dictionaries/C/substring_completion?term=melanoma' + pubDictPagingOpt
-      ];
+        [
+          testURLBase + '/dictionaries/A/substring_completion?term=melanoma' + pubDictPagingOpt,
+          testURLBase + '/dictionaries/B/substring_completion?term=melanoma' + pubDictPagingOpt,
+          testURLBase + '/dictionaries/C/substring_completion?term=melanoma' + pubDictPagingOpt
+        ], pref, rest];
 
       res1.should.deep.equal(expectedResult1);
       res2.should.deep.equal(expectedResult2);
@@ -855,18 +869,20 @@ describe('PubDictionaries.js', () => {
       // filter.dictID = {A,B,C}, sort.dictID = {A}, page = 1
       const res0 = dict2.buildMatchURLs(melanomaStr, options);
       const expectedResult0 = [
-        testURLBase + '/dictionaries/A/substring_completion?term=melanoma' + pubDictPagingOpt,
-        testURLBase + '/dictionaries/B/substring_completion?term=melanoma' + pubDictPagingOpt,
-        testURLBase + '/dictionaries/C/substring_completion?term=melanoma' + pubDictPagingOpt
-      ];
+        [
+          testURLBase + '/dictionaries/A/substring_completion?term=melanoma' + pubDictPagingOpt,
+          testURLBase + '/dictionaries/B/substring_completion?term=melanoma' + pubDictPagingOpt,
+          testURLBase + '/dictionaries/C/substring_completion?term=melanoma' + pubDictPagingOpt
+        ], 1, 2];
 
       // filter.dictID = {A,B,C}, sort.dictID = {A}, page = 1
       const res1 = dict.buildMatchURLs(melanomaStr, options);
       const expectedResult1 = [
-        testURLBase + '/dictionaries/A/mixed_completion?term=melanoma' + pubDictPagingOpt,
-        testURLBase + '/dictionaries/B/mixed_completion?term=melanoma' + pubDictPagingOpt,
-        testURLBase + '/dictionaries/C/mixed_completion?term=melanoma' + pubDictPagingOpt
-      ];
+        [
+          testURLBase + '/dictionaries/A/mixed_completion?term=melanoma' + pubDictPagingOpt,
+          testURLBase + '/dictionaries/B/mixed_completion?term=melanoma' + pubDictPagingOpt,
+          testURLBase + '/dictionaries/C/mixed_completion?term=melanoma' + pubDictPagingOpt
+        ], 1, 2];
 
       // filter.dictID = {A,B,C}, sort.dictID = {A,C}, no page
       options.sort.dictID.push('http://test/dictionaries/C');
@@ -874,48 +890,53 @@ describe('PubDictionaries.js', () => {
       options.perPage = 10;
       const res2 = dict.buildMatchURLs(melanomaStr, options);
       const expectedResult2 = [
-        testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=1&per_page=10',
-        testURLBase + '/dictionaries/C/mixed_completion?term=melanoma&page=1&per_page=10',
-        testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=1&per_page=10'
-      ];
+        [
+          testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=1&per_page=10',
+          testURLBase + '/dictionaries/C/mixed_completion?term=melanoma&page=1&per_page=10',
+          testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=1&per_page=10'
+        ], 2, 1];
 
       // filter.dictID = {A,B,C,D}, sort.dictID = {A,C}, page = 2
       options.filter.dictID.push('http://test/dictionaries/D');
       options.page = 2;
       const res3 = dict.buildMatchURLs(melanomaStr, options);
       const expectedResult3 = [
-        testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=2&per_page=10',
-        testURLBase + '/dictionaries/C/mixed_completion?term=melanoma&page=2&per_page=10',
-        testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=2&per_page=10',
-        testURLBase + '/dictionaries/D/mixed_completion?term=melanoma&page=2&per_page=10'
-      ];
+        [
+          testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=2&per_page=10',
+          testURLBase + '/dictionaries/C/mixed_completion?term=melanoma&page=2&per_page=10',
+          testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=2&per_page=10',
+          testURLBase + '/dictionaries/D/mixed_completion?term=melanoma&page=2&per_page=10'
+        ], 2, 2];
 
       // filter.dictID = {A,B}, sort.dictID = {A,C}, page = 2
       options.filter.dictID = options.filter.dictID.splice(0,2);
       const res4 = dict.buildMatchURLs(melanomaStr, options);
       const expectedResult4 = [
-        testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=2&per_page=10',
-        testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=2&per_page=10'
-      ];
+        [
+          testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=2&per_page=10',
+          testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=2&per_page=10'
+        ], 1, 1];
 
       // filter.dictID = {A,B,F}, sort.dictID = {A,C}, page = 3
       options.filter.dictID.push('http://test/dictionaries/F');
       options.page = 3;
       const res5 = dict.buildMatchURLs(melanomaStr, options);
       const expectedResult5 = [
-        testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=3&per_page=10',
-        testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=3&per_page=10',
-        testURLBase + '/dictionaries/F/mixed_completion?term=melanoma&page=3&per_page=10'
-      ];
+        [
+          testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=3&per_page=10',
+          testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=3&per_page=10',
+          testURLBase + '/dictionaries/F/mixed_completion?term=melanoma&page=3&per_page=10'
+        ], 1, 2];
 
       // filter.dictID = {A,B,F}, sort.dictID = {A,C}, no page
       delete options.page;
       const res6 = dict.buildMatchURLs(melanomaStr, options);
       const expectedResult6 = [
-        testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=1&per_page=10',
-        testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=1&per_page=10',
-        testURLBase + '/dictionaries/F/mixed_completion?term=melanoma&page=1&per_page=10'
-      ];
+        [
+          testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=1&per_page=10',
+          testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=1&per_page=10',
+          testURLBase + '/dictionaries/F/mixed_completion?term=melanoma&page=1&per_page=10'
+        ], 1, 2];
 
       // filter.dictID = {A,B,F}, sort.dictID = {A,B,F}, no page
       options.sort.dictID.pop();
@@ -923,18 +944,20 @@ describe('PubDictionaries.js', () => {
       options.sort.dictID.push('http://test/dictionaries/F');
       const res7 = dict.buildMatchURLs(melanomaStr, options);
       const expectedResult7 = [
-        testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=1&per_page=10',
-        testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=1&per_page=10',
-        testURLBase + '/dictionaries/F/mixed_completion?term=melanoma&page=1&per_page=10'
-      ];
+        [
+          testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=1&per_page=10',
+          testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=1&per_page=10',
+          testURLBase + '/dictionaries/F/mixed_completion?term=melanoma&page=1&per_page=10'
+        ], 0, 3];
 
       options.page = 20;
       const res8 = dict.buildMatchURLs(melanomaStr, options);
       const expectedResult8 = [
-        testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=20&per_page=10',
-        testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=20&per_page=10',
-        testURLBase + '/dictionaries/F/mixed_completion?term=melanoma&page=20&per_page=10'
-      ];
+        [
+          testURLBase + '/dictionaries/A/mixed_completion?term=melanoma&page=20&per_page=10',
+          testURLBase + '/dictionaries/B/mixed_completion?term=melanoma&page=20&per_page=10',
+          testURLBase + '/dictionaries/F/mixed_completion?term=melanoma&page=20&per_page=10'
+        ], 0, 3];
 
       // filter.dictID = {A,B,F}, sort.dictID = {A,B,F,G}, page 20
       options.sort.dictID.push('http://test/dictionaries/G');
