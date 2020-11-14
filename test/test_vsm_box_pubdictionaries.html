@@ -2,7 +2,7 @@
 <html lang="English">
 <head>
     <title>vsm-box + PubDictionaries example</title>
-    <script src="/home/john/repos/uniBioDicts/vsm-pubdictionaries/dist/vsm-pubdictionaries.min.js"></script>
+    <script src="../dist/vsm-pubdictionaries.min.js"></script>
     <script src="https://unpkg.com/vsm-dictionary-rnacentral@^1.0.1/dist/vsm-dictionary-rnacentral.min.js"></script>
     <script src="https://unpkg.com/vsm-dictionary-cacher@^1.2.0/dist/vsm-dictionary-cacher.min.js"></script>
     <script src="https://unpkg.com/vsm-dictionary-combiner@^1.0.1/dist/vsm-dictionary-combiner.min.js"></script>
@@ -15,8 +15,8 @@
 
 <script>
   // initialize vsm-pubdictionaries
-  let VsmPubDict  = new VsmPubDictionaries({log: true});
-  let VsmDictRNAcentral  	= new VsmDictionaryRNAcentral({log: true});
+  let VsmPubDict = new VsmPubDictionaries({log: true, suggest: 'mixed'});
+  let VsmDictRNAcentral = new VsmDictionaryRNAcentral({log: true});
 
   // initialize a cached version of the combiner
   let VsmDictionaryCombinerCached = VsmDictionaryCacher(VsmDictionaryCombiner, { predictEmpties: false });
@@ -29,37 +29,46 @@
   });
 
   let vsmbox = document.getElementsByTagName('vsm-box')[0];
-  let queryOptions = { perPage: 5 };
+  let queryOptions = { perPage: 10 };
   let initialValue = {
     terms: [
-      { // query all dictionaries (and sub-dictionaries)
-        placeholder: 'all dictionaries'
-      },
-      { // query only the `human-UniProt` pubDictionary
+      { placeholder: 'person',
         queryOptions: {
-          filter: { dictID: [ 'http://pubdictionaries.org/dictionaries/human-UniProt' ] }
+          filter: { dictID: [ 'http://pubdictionaries.org/dictionaries/demo-Persons' ] }
         },
-        placeholder: 'human-UniProt'
       },
-      { // query only the `MONDO` pubDictionary
+      { placeholder: 'activity',
         queryOptions: {
-          filter: { dictID: [ 'http://pubdictionaries.org/dictionaries/MONDO' ] }
+          filter: { dictID: [ 'http://pubdictionaries.org/dictionaries/demo-Relations' ] }
         },
-        placeholder: 'MONDO'
+        str: 'eats', descr: '=an eating activity', classID: null, instID: null
       },
-      { // query only RNAcentral and the `human-UniProt` pubdictionary
+      { placeholder: 'food',
         queryOptions: {
-          filter: { dictID: [
-            'https://www.rnacentral.org',
-            'http://pubdictionaries.org/dictionaries/human-UniProt'
-          ]}
+          filter: {
+            dictID: [
+              'http://pubdictionaries.org/dictionaries/demo-Food',
+              'http://pubdictionaries.org/dictionaries/demo-Animals'
+            ]},
+          // uncomment the next line to get the results from the food dictionary first
+          // sort: { dictID: [ 'http://pubdictionaries.org/dictionaries/demo-Food' ]}
         },
-        placeholder: 'RNA + UniProt'
+      },
+      { placeholder: 'activity',
+        queryOptions: {
+          filter: { dictID: [ 'http://pubdictionaries.org/dictionaries/demo-Relations' ] }
+        },
+        str: 'with', descr: '=using, =use of', classID: null, instID: null
+      },
+      { placeholder: 'tool',
+        queryOptions: {
+          filter: { dictID: [ 'http://pubdictionaries.org/dictionaries/demo-Tools' ] }
+        },
       }
     ],
     conns: [
       { type: 'T', pos: [ 0, 1, 2 ] },
-      { type: 'T', pos: [ 2, -1, 3 ] },
+      { type: 'T', pos: [ 1, 3, 4 ] },
     ]
   };
 
