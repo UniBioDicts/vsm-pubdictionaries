@@ -20,10 +20,13 @@ Run: `npm install`
 
 ## Example use
 
-Create a `test.js` file and include this code for example:
+### Node.js
+
+Create a directory `test-dir` and inside run `npm install vsm-pubdictionaries`.
+Then, create a `test.js` file and include this code for example:
 
 ```javascript
-const PubDict = require('./DictionaryBioPortal');
+const PubDict = require('vsm-pubdictionaries');
 const dict = new PubDict({log: true, suggest: 'substring'});
 
 dict.getEntryMatchesForString('dog',
@@ -45,6 +48,13 @@ dict.getEntryMatchesForString('dog',
 });
 ```
 Then, run `node test.js`
+
+### Browsers
+
+```html
+<script src="https://unpkg.com/vsm-pubdictionaries@^1.0.0/dist/vsm-pubdictionaries.min.js"></script>
+```
+after which it is accessible as the global variable `VsmPubDictionaries`.
 
 ## Tests
 
@@ -202,6 +212,15 @@ The returned results from each respective group of dictionaries are merged and t
 Then the sorted results from the 2 groups are merged and trimmed based on the `options.perPage` value.
 
 The PubDictionaries API currently supports 3 endpoints that can be used for searching terms in the corresponding dictionaries.
+By default, the `substring_completion` endpoint is used. 
+The (developer) user can specify which one of the 3 endpoints he wants to use with the global option `suggest`.
+For example, to use the `prefix_completion` endpoint we initialize the `vsm-pubdictionaries` instance as:
+```javascript
+const PubDict = require('vsm-pubdictionaries');
+const dict = new PubDict({ suggest: 'prefix' }); // 'substring' or 'mixed' also allowed
+...
+```
+
 We use the URL example above to demonstrate and explain the differences:
 
 - `prefix_completion`: returns only entries whose label **starts with** `TP53`
