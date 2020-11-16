@@ -5,7 +5,7 @@
 
 const PubDictionaries = require('../src/PubDictionaries');
 
-const dict = new PubDictionaries({log: true, suggest: 'mixed'});
+const dict = new PubDictionaries({log: true, suggest: 'substring'});
 
 dict.getEntryMatchesForString('dog',
   { filter: { dictID : [
