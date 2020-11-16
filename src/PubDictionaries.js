@@ -191,13 +191,10 @@ module.exports = class PubDictionaries extends Dictionary {
         if (callsRemaining <= 0) {
           /**
            * Gather all results in one array
-           * 1) Trim entry objects in case `filter.id` was properly defined
-           * and `getAllResults == true` (hack is enabled when requesting
-           * specific ids)
-           * 2) re-arrange entries when requesting specific ids (in case
+           * 1) re-arrange entries when requesting specific ids (in case
            * of duplicate entries with the same id, but different dictID)
-           * 3) z-prune objects
-           * 4) trim entry objects based on the `getAllResults` and
+           * 2) z-prune objects
+           * 3) trim entry objects based on the `getAllResults` and
            * `options.filter.id` options
            *
            */
