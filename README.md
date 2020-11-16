@@ -3,14 +3,14 @@
 <!-- badges: start -->
 [![Build Status](https://travis-ci.com/UniBioDicts/vsm-pubdictionaries.svg?branch=master)](https://travis-ci.com/UniBioDicts/vsm-pubdictionaries)
 [![codecov](https://codecov.io/gh/UniBioDicts/vsm-pubdictionaries/branch/master/graph/badge.svg)](https://codecov.io/gh/UniBioDicts/vsm-pubdictionaries)
-<!--[![npm version](https://img.shields.io/npm/v/vsm-pubdictionaries)](https://www.npmjs.com/package/vsm-pubdictionaries)
+[![npm version](https://img.shields.io/npm/v/vsm-pubdictionaries)](https://www.npmjs.com/package/vsm-pubdictionaries)
 [![Downloads](https://img.shields.io/npm/dm/vsm-pubdictionaries)](https://www.npmjs.com/package/vsm-pubdictionaries)
-[![License](https://img.shields.io/npm/l/vsm-pubdictionaries)](#license)-->
+[![License](https://img.shields.io/npm/l/vsm-pubdictionaries)](#license)
 <!-- badges: end -->
 
 ## Summary
 
-`vsm-pubdictionaries-bioportal` is an implementation of the 'VsmDictionary' parent-class/interface (from the package [`vsm-dictionary`](https://github.com/vsm/vsm-dictionary)), that communicates with the [PubDictionaries REST API](https://docs.pubdictionaries.org/) and translates the provided terms+IDs into a VSM-specific format.
+`vsm-pubdictionaries-bioportal` is an implementation of the 'VsmDictionary' parent-class/interface (from the package [`vsm-dictionary`](https://github.com/vsm/vsm-dictionary)), that communicates with the [PubDictionaries REST API](https://docs.pubdictionaries.org/) and translates the provided terms+ids into a VSM-specific format.
 
 The implementation was done during an intense hacking week at Elixir BioHackathon 2020, see [project reference](https://github.com/elixir-europe/BioHackathon-projects-2020/tree/master/projects/4).
 
@@ -67,7 +67,7 @@ node getEntries.test.js
 node getEntryMatchesForString.test.js
 ```
 
-We also include a [test HTML file](https://github.com/UniBioDicts/vsm-pubdictionaries/blob/master/test/test_vsm_box_pubdictionaries.html) that illustrates a basic curation/annotation example with the autocomplete feature, using [vsm-box](https://github.com/vsm/vsm-box) and some demo pubDictionaries (see next section).
+We also include a [test HTML file](https://github.com/UniBioDicts/vsm-pubdictionaries/blob/master/test/test_vsm_box_pubdictionaries.html) that illustrates a basic curation/annotation example with the autocomplete feature, using [vsm-box](https://github.com/vsm/vsm-box) and some demo PubDictionaries (see next section).
 
 ## 'Build' configuration & demo
 
@@ -82,8 +82,8 @@ A demo-use of this file can then be seen by opening the [HTML file](https://gith
 ## Specification
 
 Like all VsmDictionary subclass implementations, this package follows the parent class [specification](https://github.com/vsm/vsm-dictionary/blob/master/Dictionary.spec.md) or simply **spec**.
-Every PubDictionary is a simple list of labels/terms + IDs.
-In the next sections we will explain the mapping between the PubDictionaries server returned objects (most of the REST URL endpoints return `label` + `id` tuples as specified in the [API documentation](https://docs.pubdictionaries.org/)) and the corresponding VSM objects.
+Every PubDictionary is a list of labels/terms + ids.
+In the next sections we will explain the mapping between the objects returned by the PubDictionaries server (most of the REST URL endpoints return `label` + `id` tuples as specified in the [API documentation](https://docs.pubdictionaries.org/)) and the corresponding VSM objects.
 
 Note that we mostly implement **strict error handling** in the sense that whenever we launch multiple parallel queries to PubDictionaries REST API (see the functions specifications below), if one of them returns an error (either a string or an error JSON object response), then the result will be an error object (no matter if all the rest of the calls returned proper results).
 
@@ -114,7 +114,7 @@ Otherwise, an example of a URL that is send when requesting for the dictionary i
 https://pubdictionaries.org/dictionaries/human-UniProt.json
 ```
 
-Note that when the dictionary acronym (here `human-UniProt`) is not an existent dictionary, we get back an error from the server, but we ignore it, according to the spec.
+Note that when the dictionary acronym (here `human-UniProt`) is not an existent dictionary, we get back an error from the server but we ignore it (according to the spec).
 The `options.page` and `options.perPage` are used to trim the number of the results.
 If these options are not properly defined, then the default values from the PubDictionaries API are used (*1* and *15* respectively).
 
@@ -145,7 +145,7 @@ https://pubdictionaries.org/dictionaries/human-UniProt/entries.json?page=1&per_p
 In case of multiple specified `dictID`'s, multiple parallel queries like the above are sent, only changing the dictionary name.
 The `options.page` and `options.perPage` options correspond to the `page` and `per_page` parameters in the REST URL.
 
-When only the `options.filter.id` is properly defined (requesting specific ids in all PubDictionaries) or both `filter.id` and `filter.dictID` are properly defined (requesting specific ids in specific pubDictionaries), we send the following URL to the pubDictionaries server, using the `find_terms.json` endpoint:
+When only the `options.filter.id` is properly defined (requesting specific ids in all PubDictionaries) or both `filter.id` and `filter.dictID` are properly defined (requesting specific ids in specific PubDictionaries), we send the following URL to the PubDictionaries server, using the `find_terms.json` endpoint:
 ```
 https://pubdictionaries.org/find_terms.json?dictionaries=MONDO,ncbi_taxon&ids=2|5|http://purl.obolibrary.org/obo/MONDO_0024919
 ```
@@ -153,41 +153,41 @@ https://pubdictionaries.org/find_terms.json?dictionaries=MONDO,ncbi_taxon&ids=2|
 No pagination is supported, so `options.page` and `options.perPage` are discarded.
 If no `filter.dictID` is given, the URL above is written as `...?dictionaries=&ids=...`.
 
-Because of **common ids between different PubDictionaries**, we always re-arrange the returned entries in order to have the **first uniquely-matched ids** atop in the returned list of VSM-entries.
-For example, if using the above URL, we had found `id1` in dictionaries `A` and `B` and `id2` and `id3` in the `C` dictionary, the VSM-entry objects would then be received in `(id,dictID)` form as `{ (id1,A), (id1,B), (id2,C), (id3,C) }` from the server.
-We re-arrange them as `{ (id1,A), (id2,C), (id3,C), (id1,B) }`, in order to have the first unique result entries atop the rest.
+Because of **common ids between different PubDictionaries**, we always re-arrange the returned entries in order to have the **first uniquely-matched ids** atop in the returned list of VSM entries.
+For example, if using the above URL, we had found `id1` in dictionaries `A` and `B` and `id2` and `id3` in the `C` dictionary, the VSM `entry` objects would then be received in `(id,dictID)` form as `{ (id1,A), (id1,B), (id2,C), (id3,C) }` from the server.
+We re-arrange them as `{ (id1,A), (id2,C), (id3,C), (id1,B) }`, in order to have the first unique-`id` result entries atop the rest.
 
 Note that **no sorting** whatsoever is done on the client side, but on the server side the `entries.json` endpoint sorts entries by `label`, while the `find_terms.json` endpoint sorts entries first by `id`, then by `dictID`.
 
-A possible trimming of entry results might take place after the re-arranging is done, only if the `options.getAllResults` if `false`.
+A possible trimming of entry results might take place after the re-arranging is done, only if the `options.getAllResults` is `false`.
 Then, if the `options.filter.id` is properly defined (asking for specific ids on all or some PubDictionaries), we trim using both the `options.page` and `options.perPage` options.
- Otherwise, when asking for entries for specific PubDictionaries (proper `options.filter.dictID` only), we trim using the `options.perPage` (since the `page` and `perPage` parameters have already been used in the URL string for the `entries.json` endpoint)
+ Otherwise, when asking for entries for specific PubDictionaries (proper `options.filter.dictID` only), we trim using the `options.perPage` (since the `page` and `perPage` parameters have already been used in the URL string for the `entries.json` endpoint and we might want to trim results from multiple dictionaries).
 
-The mapping between the returned JSON objects from the PubDictionaries API and the corresponding VSM-entry objects is fully detailed in the tables below for the different endpoints:
+The mapping between the returned JSON objects from the PubDictionaries API and the corresponding VSM `entry` objects is fully detailed in the tables below for the different endpoints:
 
 - `entries.json` endpoint:
 
-The returned result is an array of labels and IDs.
+The returned result is an array of labels and ids.
 
 VSM entry object property | PubDictionaries entry's property | Notes
 |:---:|:---:|:---:
 `id` | `id` | the concept-ID
 `dictID` | - | the URI dictID is the concatenation of the string `https://pubdictionaries.org/dictionaries/` and the dictionary name given in the `entries.json` URL
-`descr` | `id` | we trim any leading `http(s)://` or `www.` strings from the `id`
+`descr` | `id` | we trim any leading `http(s)://` or `www.` substrings from the `id`
 `terms[0].str` | `label` | the concept's synonymous term (1 only)
 
 - `find_terms.json` endpoint:
 
-The returned result is an object with properties the requested IDs and values arrays of labels and dictionaries.
+The returned result is an object with properties the requested ids and corresponding values arrays, the elements of which are pairs of terms/labels and dictionary names.
 
 VSM entry object property | PubDictionaries entry's property | Notes
 |:---:|:---:|:---:
 `id` | `id` | the concept-ID (*)
 `dictID` | - | the URI dictID is the concatenation of the string `https://pubdictionaries.org/dictionaries/` and the dictionary value returned
-`descr` | `id` | we trim any leading `http(s)://` or `www.` strings from the `id`
+`descr` | `id` | we trim any leading `http(s)://` or `www.` substrings from the `id`
 `terms[i].str` | `label` | the concept's synonymous terms (*) - can be many
 
-(*) Note that since synonyms are represented with **different labels but same ids** in a PubDictionary, we merge all these entries to a single VSM-entry object, which has the common `id` and possibly many synonymous `label`s in the `terms` list.
+(*) Note that since synonyms are represented with **different labels but same ids** in a PubDictionary, we merge all these entries to a single VSM `entry` object, which has the common `id` and possibly many synonymous `label`s in the `terms` array.
 
 ### Map PubDictionaries to Match VSM object
 
@@ -199,7 +199,7 @@ If no dictionaries are given for filtering (empty/absent `options.filter.dictID`
 ```javascript
 { status: 404, error: 'Not supported' }
 ```
-Same error object we return when the request is for specific dictionaries in the `options.sort.dictID` option with `option.page` > 1 (all according to the **spec**).
+Same error object we return when the request is for specific dictionaries with the `options.sort.dictID` option and `option.page` > 1 (all according to the **spec**).
 
 An example of a URL string that is built and sent to the PubDictionaries server is:
 ```
@@ -221,21 +221,21 @@ const dict = new PubDict({ suggest: 'prefix' }); // 'substring' or 'mixed' also 
 ...
 ```
 
-We use the URL example above to demonstrate and explain the differences:
+We use the URL example above to demonstrate and explain the differences between the 3 endpoints:
 
 - `prefix_completion`: returns only entries whose label **starts with** `TP53`
-- `substring_completion`: returns entries which have the `TP53` string somewhere in their label, not necessarily having the prefix matches first.
-- `mixed_completion`: a combination of the above two endpoints, putting the prefix matches first and the infix matches later (common possible entries are pruned).
+- `substring_completion`: returns entries which have the `TP53` string **somewhere in their label**, not necessarily having the prefix matches first.
+- `mixed_completion`: a **combination of the above two endpoints**, putting the prefix matches first and the infix matches later (common possible entries are pruned).
 
-Each of the `*_completion` endpoints return an array of labels and IDs.
-The mapping between the returned JSON object from the PubDictionaries API and the corresponding VSM-match object is fully detailed in the table below:
+Each of the `*_completion` endpoints return an array of labels and ids.
+The mapping between the returned JSON object from the PubDictionaries API and the corresponding VSM `match` object is fully detailed in the table below:
 
 VSM match object property | PubDictionaries entry's property | Notes
 |:---:|:---:|:---:
 `id` | `id` | the concept-ID
 `dictID` | - | the URI dictID is the concatenation of the string `https://pubdictionaries.org/dictionaries/` and the dictionary name given in the `*_completion` URL
 `str` | `label` | the string representation of the term
-`descr` | `id` | we trim any leading `http(s)://` or `www.` strings from the `id`
+`descr` | `id` | we trim any leading `http(s)://` or `www.` substrings from the `id`
 `terms[0].str` | `label` | the concept's synonymous term (only 1)
 
 ## License
