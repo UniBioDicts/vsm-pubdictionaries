@@ -6,7 +6,7 @@ module.exports = {
     mocha: true
   },
   globals: {
-    VsmDictionaryBioPortal: true,
+    VsmPubDictionaries: true,
   },
   parserOptions: {
     ecmaVersion: 2018
