@@ -73,10 +73,10 @@ All the API responses are structured as JSON objects.
 Up until the BioHackathon event, the REST service endpoints were as follows:
 
 1. `find_ids`: given a specific term and some dictionary names, this endpoint returns the corresponding IDs that exactly match the term in these dictionaries.
-Example: http://pubdictionaries.org/find_ids.json?labels=TP53&dictionaries=human-UniProt
+Example: https://pubdictionaries.org/find_ids.json?labels=TP53&dictionaries=human-UniProt
 2. `prefix_completion`/`substring_completion`: given a term, these endpoints search for prefix (resp. substring) matches in a specified dictionary and return the corresponding entries.
 Note that always the first page of results was returned and at most 15 entries.
-Example: http://pubdictionaries.org/dictionaries/human-UniProt/prefix_completion?term=p53
+Example: https://pubdictionaries.org/dictionaries/human-UniProt/prefix_completion?term=p53
 
 The following REST Service endpoints were added during the bioHackathon:
 
@@ -87,11 +87,11 @@ Example: https://pubdictionaries.org/dictionaries/human-UniProt/entries.json?pag
 Note that the user can explicitly specify the number of pages to split the entries of a dictionary and the exact page he wants to get the results back from.
 3. `find_terms` endpoint: this is the complement of the `find_ids` endpoint in the sense that it returns a list of terms and dictionary names that match the given IDs, first sorted by ID and then by the dictionary name.
 If no dictionary name is given, then this endpoint searches for the given IDs in all dictionaries.
-Example: http://pubdictionaries.org/find_terms.json?dictionaries=&ids=https://www.uniprot.org/uniprot/P04637
+Example: https://pubdictionaries.org/find_terms.json?dictionaries=&ids=https://www.uniprot.org/uniprot/P04637
 4. `mixed_completion` endpoint: a combined and updated version of the `prefix_completion` and `substring_completion` endpoints.
 For a given term and specified dictionary, it returns a list of entries, putting the prefix completions in the top half and the substring completions in the bottom half, while pruning any possible common entries.
 In addition, this endpoint supports pagination which is a direct result of extending the prefix and substring endpoints to support this feature as well.
-Example: http://pubdictionaries.org/dictionaries/human-UniProt/mixed_completion?term=p53&page=2&per_page=3
+Example: https://pubdictionaries.org/dictionaries/human-UniProt/mixed_completion?term=p53&page=2&per_page=3
 
 Additional work on the PubDictionaries server-side included the support of create and delete operations of a specific dictionary, given certified user credentials.
 We show an example of each in the next code blocks, using the standard `curl` Linux command:
@@ -99,19 +99,19 @@ We show an example of each in the next code blocks, using the standard `curl` Li
 ```
 curl -i -u username:password -H "content-type:application/json" -d 
 '{"name":"my_new_dict", "description":"A newly created public dictionary", 
-"public":true}' "http://pubdictionaries.org/dictionaries.json"
+"public":true}' "https://pubdictionaries.org/dictionaries.json"
 ```
 
 ```
 curl -XDELETE -u 'username:password' 
-"http://pubdictionaries.org/dictionaries/my_new_dict.json"
+"https://pubdictionaries.org/dictionaries/my_new_dict.json"
 ```
 
 Lastly, the error handling was harmonized across all REST URL endpoints.
 In particular, when a user searches for a non-existent dictionary name, the PubDictionaries server returns a proper JSON-formatted response as follows: `{ "message": "Unknown dictionary: <name>." }`.
 For example, all the following URL links return such a response object:
 
-- http://pubdictionaries.org/dictionaries/non-existent-dictionary-name.json
+- https://pubdictionaries.org/dictionaries/non-existent-dictionary-name.json
 - https://pubdictionaries.org/find_terms.json?dictionaries=non-existent-dictionary-name&ids=id1,id2
 - https://pubdictionaries.org/dictionaries/non-existent-dictionary-name/entries.json
 
@@ -149,7 +149,7 @@ Lastly, we expect that these updates, coupled with the search-string functionali
 
 # Links to software and documentation
 
-- PubDictionaries API documentation: http://docs.pubdictionaries.org
+- PubDictionaries API documentation: https://docs.pubdictionaries.org
 - PubDictionaries source code: https://github.com/pubannotation/pubdictionaries
 - PubDictionaries UBD Client: https://github.com/UniBioDicts/vsm-pubdictionaries
 - Demo example with vsm-box: https://github.com/UniBioDicts/vsm-pubdictionaries/blob/master/test/test_vsm_box_pubdictionaries.html
