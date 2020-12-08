@@ -1,13 +1,13 @@
 ---
-title: 'Linking PubDictionaries with UniBioDicts to support curation efforts'
+title: 'Linking PubDictionaries with UniBioDicts to support Community Curation'
 tags:
-  - dictionary-search
+  - dictionary search
   - biocuration
-  - curation-tools
-  - rest-api
-  - public-dictionaries
-  - knowledge-annotation
-  - semantic-web
+  - curation tools
+  - rest api
+  - public dictionaries
+  - knowledge annotation
+  - semantic web
 authors:
   - name: John Zobolas
     orcid: 0000-0002-3609-8674
