@@ -12,6 +12,8 @@ on:
 jobs:
   build:
 
+    name: ${{ runs-on }} (${{ matrix.node-version }})
+
     runs-on: ubuntu-latest
 
     strategy:
