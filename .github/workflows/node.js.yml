@@ -12,13 +12,12 @@ on:
 jobs:
   build:
 
-    name: ${{ matrix.os }} (${{ matrix.node-version }})
+    name: ${{ runner.OS }} (${{ matrix.node-version }})
 
-    runs-on: $ {{ matrix.os }}
+    runs-on: ${{ runner.OS }}
 
     strategy:
       matrix:
-        os: [ubuntu-latest]
         node-version: [12.x, 14.x]
 
     steps:
