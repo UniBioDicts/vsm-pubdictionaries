@@ -10,3 +10,4 @@ secret*
 *.sublime*
 coverage/
 .nyc_output/
+paper/paper.pdf
