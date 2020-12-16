@@ -16,7 +16,7 @@ jobs:
         os: [ubuntu-latest]
         node-version: [12.x, 14.x]
 
-    name: ${{ matrix.os }} (${{ matrix.node-version }})
+    name: ${{ matrix.os }} (Node ${{ matrix.node-version }})
 
     runs-on: ${{ matrix.os }}
 
