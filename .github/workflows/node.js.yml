@@ -11,15 +11,14 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [12.x, 14.x]
 
     name: ${{ matrix.os }} (${{ matrix.node-version }})
 
     runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: ubuntu-latest
-        node-version: [12.x, 14.x]
 
     steps:
     - uses: actions/checkout@v2
