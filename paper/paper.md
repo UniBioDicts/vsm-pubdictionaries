@@ -31,7 +31,6 @@ affiliations:
     index: 3
   - name: Shared first authorship
     index: '*'
-date: 18 December 2020
 bibliography: paper.bib
 event: BH20EU
 authors_short: John Zobolas & Jin-Dong Kim \emph{et al.}
@@ -53,7 +52,7 @@ For example, expert curators who rely on specialized software tools in the annot
 Similar difficulties are faced by non-expert curators.
 Some biologists want to create a project-specific knowledge resource in a biological niche that is only minimally or not yet covered by existing controlled vocabularies.
 Under time pressure of project milestones, these biologists may not immediately have the resources to organize a multilateral effort to standardize the terminology in their field.
-Instead they typically resort to creating ‘private’ vocabularies within their projects, that may later serve as a first step toward larger-scale coordination (e.g. see @Hartmann2019).
+Instead they typically resort to creating ‘private’ vocabularies within their projects, that may later serve as a first step toward larger-scale coordination [@Hartmann2019].
 
 In cases where there is an abundance of resources for controlled vocabularies, ontologies and identifiers, it may still be challenging to coordinate access to these many necessary resources for dedicated annotation endeavours.
 Alternatively, in cases where no proper controlled vocabulary would exist, the results from all the work that goes into creating new vocabularies will remain largely isolated from general use, if no term sharing mechanism is available.
@@ -136,7 +135,7 @@ Our client software addresses this problem by presenting a mediator solution tha
 Regarding the software client code, we wrote [extensive documentation](https://github.com/UniBioDicts/vsm-pubdictionaries#readme) to delineate the mapping between the terms and IDs from PubDictionaries and the unified UBD format and how this is achieved via the updated PubDictionaries REST API endpoints, all in accordance with the UBDs’ shared [dictionary interface specification](https://github.com/vsm/vsm-dictionary/blob/master/Dictionary.spec.md).
 We also enabled continuous integration support via [GitHub Actions](https://github.com/UniBioDicts/vsm-pubdictionaries/actions) and wrote extensive tests ([code coverage](https://codecov.io/gh/UniBioDicts/vsm-pubdictionaries) is at 95%), so as to deliver more reliable, fault-tolerant and easy-to-extend software.
 Moreover, the documentation includes two examples; one showcasing the search term functionality via `Node.js` and one indicating how to use the client library in a web-based environment, with an HTML file.
-Finally, the [demo example](https://github.com/UniBioDicts/vsm-pubdictionaries/blob/master/test/test_vsm_box_pubdictionaries.html) (see figure \ref{fig}) that was presented during the last report session of the BioHackathon, demonstrates a simple use-case where a few public dictionaries were created and their terms served in a vsm-box curation interface [@vsm-box].
+Finally, the [demo example](https://github.com/UniBioDicts/vsm-pubdictionaries/blob/master/test/test_vsm_box_pubdictionaries.html) (see Figure \ref{fig}) that was presented during the last report session of the BioHackathon, demonstrates a simple use-case where a few public dictionaries were created and their terms served in a vsm-box curation interface [@vsm-box].
 Thus we show how straightforward the annotation of new information can be by means of the autocomplete functionality of the provided curation tool, and how this new knowledge can be connected with semantically aware annotations.
 
 ![Demo example that uses a ‘vsm-box’ curation interface component, pre-filled with a VSM-template. An autocomplete panel appears while the user enters terms linked to identifiers. These term+ID pairs come from demo-dictionaries that we created at PubDictionaries, and are fetched through the new REST API-client described in this paper. Placeholders like ‘food’ and ‘tool’ indicate the kinds of dictionaries that specific fields of the template are connected with. On top, VSM-connectors formalize the structure and meaning of this knowledge unit. \label{fig}](./demo-pubdict.png)
