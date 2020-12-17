@@ -1,7 +1,7 @@
 # vsm-pubdictionaries
 
 <!-- badges: start -->
-![Node.js CI](https://github.com/UniBioDicts/vsm-pubdictionaries/workflows/Node.js%20CI/badge.svg)
+[![Node.js CI](https://github.com/UniBioDicts/vsm-pubdictionaries/workflows/Node.js%20CI/badge.svg)](https://github.com/UniBioDicts/vsm-pubdictionaries/actions)
 [![codecov](https://codecov.io/gh/UniBioDicts/vsm-pubdictionaries/branch/master/graph/badge.svg)](https://codecov.io/gh/UniBioDicts/vsm-pubdictionaries)
 [![npm version](https://img.shields.io/npm/v/vsm-pubdictionaries)](https://www.npmjs.com/package/vsm-pubdictionaries)
 [![Downloads](https://img.shields.io/npm/dm/vsm-pubdictionaries)](https://www.npmjs.com/package/vsm-pubdictionaries)
