@@ -59,6 +59,8 @@ In cases where there is an abundance of resources for controlled vocabularies, o
 Alternatively, in cases where no proper controlled vocabulary would exist, the results from all the work that goes into creating new vocabularies will remain largely isolated from general use, if no term sharing mechanism is available.
 Existing tools would then also be unable to access these newly created terms and for example serve them to curators in an autocomplete panel, to make their task easier and less error-prone.
 
+\newpage
+
 These problems are addressed by two complementary initiatives.
 On the one hand, **Unified Biological Dictionaries** (**UniBioDicts** or **UBDs**) [@UBDs] is a set of software packages that offers a unified, single access point to biological terminology resources, and is available to be plugged into any curation platform currently in operation (for example the general-purpose curation interface ‘vsm-box’ [@vsm-box], based on VSM [@vsm-paper], is out-of-the-box compatible with UBDs).
 On the other hand, **PubDictionaries** [@Kim2019] is a public repository of dictionaries where users can create and immediately share their own dictionaries based on a simple data format consisting of a term and an identifier.
@@ -93,6 +95,8 @@ Example: https://pubdictionaries.org/dictionaries/human-UniProt/prefix_completio
 3. `text_annotation`: given a piece of text and dictionary names, this endpoint returns the result of annotation to the text using the dictionaries.
 The annotation is performed based on computation of string similarity between dictionary entries and expressions in the text.
 Example: https://pubdictionaries.org/text_annotation.json?dictionary=human-UniProt&text=The%20tumor%20suppressor%20p53%20(TP53)%20is%20the%20most%20frequently%20mutated%20human%20gene
+
+\newpage
 
 The following REST Service endpoints were added during the BioHackathon:
 
@@ -144,6 +148,8 @@ This novel software enables annotation tools to use a common language and interf
 Note that the process of integrating new terms into standard resources can be time-consuming, so supporting communities of curators to create and utilize new terms that are at least publicly shared, in PubDictionaries, is a helpful first measure to tackle the problem of missing terms during ongoing curation work.
 Our software is a step towards achieving that goal, since it positions the community-manageable PubDictionaries into the mainstream of controlled vocabularies (CVs) and ontology resources.
 It fills the niche of new and *ad hoc* CVs that in turn may prompt new dedicated efforts to mature these CVs for consensus and expert maintenance.
+
+\newpage
 
 Propelled by an ELIXIR BioHackathon event, our work underpins the goals of several of ELIXIR’s activities, or so-called ‘Platforms’.
 In the ELIXIR Data Platform, the drive to use, re-use and value life science data takes precedence.
