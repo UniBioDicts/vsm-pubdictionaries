@@ -14,6 +14,13 @@
 
 The implementation was done during an intense hacking week at Elixir BioHackathon 2020, see [project reference](https://github.com/elixir-europe/BioHackathon-projects-2020/tree/master/projects/4).
 
+## Citation
+
+The work done in the Europe BioHackathon 2020 was published in http://biohackrxiv.org/.
+Please cite as follows:
+
+Zobolas, J., Kim, J., Kuiper, M., & Vercruysse, S. (2020, December 25). Linking PubDictionaries with UniBioDicts to support Community Curation. https://doi.org/10.37044/osf.io/gzfa8
+
 ## Install
 
 Run: `npm install`
